@@ -139,7 +139,7 @@
     const image = frameCtx.getImageData(0, 0, width, height);
     const data = image.data;
     const visited = new Uint8Array(width * height);
-    const components = [];
+    let best = { x: 0, y: 0, width, height, area: 0 };
 
     function isOpaque(index) {
       return data[index * 4 + 3] > 12;
@@ -194,28 +194,85 @@
       }
 
       const component = inspectComponent(index);
-      components.push(component);
+      if (component.area > best.area) {
+        best = component;
+      }
     }
 
-    if (components.length === 0) {
+    if (best.area === 0) {
       return { x: 0, y: 0, width, height };
     }
 
-    const largestArea = Math.max(...components.map((component) => component.area));
-    const minArea = Math.max(18, largestArea * 0.01);
-    const kept = components.filter((component) => component.area >= minArea);
+    return best;
+  }
 
-    const minX = Math.min(...kept.map((component) => component.x));
-    const minY = Math.min(...kept.map((component) => component.y));
-    const maxX = Math.max(...kept.map((component) => component.x + component.width - 1));
-    const maxY = Math.max(...kept.map((component) => component.y + component.height - 1));
+  function getAlphaComponents(canvasElement, minArea) {
+    const frameCtx = canvasElement.getContext("2d");
+    const { width, height } = canvasElement;
+    const data = frameCtx.getImageData(0, 0, width, height).data;
+    const visited = new Uint8Array(width * height);
+    const components = [];
 
-    return {
-      x: minX,
-      y: minY,
-      width: maxX - minX + 1,
-      height: maxY - minY + 1
-    };
+    function isOpaque(index) {
+      return data[index * 4 + 3] > 12;
+    }
+
+    for (let index = 0; index < visited.length; index += 1) {
+      if (visited[index]) {
+        continue;
+      }
+
+      if (!isOpaque(index)) {
+        visited[index] = 1;
+        continue;
+      }
+
+      const stack = [index];
+      visited[index] = 1;
+      let area = 0;
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+
+      while (stack.length > 0) {
+        const current = stack.pop();
+        const x = current % width;
+        const y = Math.floor(current / width);
+
+        area += 1;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+
+        for (const neighbor of [current - 1, current + 1, current - width, current + width]) {
+          if (neighbor < 0 || neighbor >= visited.length || visited[neighbor] || !isOpaque(neighbor)) {
+            continue;
+          }
+
+          const nx = neighbor % width;
+          if (Math.abs(nx - x) > 1) {
+            continue;
+          }
+
+          visited[neighbor] = 1;
+          stack.push(neighbor);
+        }
+      }
+
+      if (area >= minArea) {
+        components.push({
+          x: minX,
+          y: minY,
+          width: maxX - minX + 1,
+          height: maxY - minY + 1,
+          area
+        });
+      }
+    }
+
+    return components;
   }
 
   function extractFrames(image) {
@@ -260,6 +317,63 @@
     }
 
     return frames;
+  }
+
+  function extractFramesByComponents(image) {
+    const columns = Math.max(1, Math.round(config.spriteColumns));
+    const rows = Math.max(1, Math.round(config.spriteRows));
+    const expectedFrames = columns * rows;
+    const source = document.createElement("canvas");
+    const sourceCtx = source.getContext("2d");
+
+    source.width = image.naturalWidth;
+    source.height = image.naturalHeight;
+    sourceCtx.drawImage(image, 0, 0);
+    makeTransparent(source);
+
+    const components = getAlphaComponents(source, 200)
+      .sort((left, right) => right.area - left.area)
+      .slice(0, expectedFrames);
+
+    if (components.length < expectedFrames) {
+      return extractFrames(image);
+    }
+
+    components.sort((left, right) => (left.y + left.height / 2) - (right.y + right.height / 2));
+    const ordered = [];
+    for (let i = 0; i < components.length; i += columns) {
+      ordered.push(
+        ...components
+          .slice(i, i + columns)
+          .sort((left, right) => (left.x + left.width / 2) - (right.x + right.width / 2))
+      );
+    }
+
+    return ordered.map((bounds) => {
+      const padding = 3;
+      const sx = Math.max(0, bounds.x - padding);
+      const sy = Math.max(0, bounds.y - padding);
+      const ex = Math.min(source.width, bounds.x + bounds.width + padding);
+      const ey = Math.min(source.height, bounds.y + bounds.height + padding);
+      const frame = document.createElement("canvas");
+      const frameCtx = frame.getContext("2d");
+
+      frame.width = ex - sx;
+      frame.height = ey - sy;
+      frameCtx.drawImage(
+        source,
+        sx,
+        sy,
+        frame.width,
+        frame.height,
+        0,
+        0,
+        frame.width,
+        frame.height
+      );
+
+      return frame;
+    });
   }
 
   function getFramesForMode() {
@@ -316,6 +430,10 @@
     }
 
     if (state.mode === "sleepEnter" || state.mode === "sleepExit") {
+      return config.sleepFrameMs;
+    }
+
+    if (state.mode === "sleepIdle") {
       return config.sleepFrameMs;
     }
 
@@ -387,6 +505,14 @@
       state.mode === "sleepIdle" ||
       state.mode === "airCrashLoop"
     ) {
+      if (state.mode === "sleepIdle") {
+        state.frameTimer += dt * 1000;
+        if (state.frameTimer >= frameDurationForMode()) {
+          state.frameTimer = 0;
+          state.frameIndex = frames.length > 0 ? (state.frameIndex + 1) % frames.length : 0;
+        }
+      }
+
       if (state.mode === "airCrashLoop") {
         state.frameTimer += dt * 1000;
         if (state.frameTimer >= frameDurationForMode()) {
@@ -520,6 +646,7 @@
     const turnToWalk = await loadImage("../assets/sprites/girar-izquierda.png");
     const walk = await loadImage("../assets/sprites/caminar-izquierda.png");
     const sleep = await loadImage("../assets/sprites/dormir.png");
+    const sleepLoop = await loadImage("../assets/sprites/foca-durmiendo.png");
     const airGrab = await loadImage("../assets/sprites/foca-aire.png");
     const airCrash = await loadImage("../assets/sprites/caida-aire.png");
     const airRecover = await loadImage("../assets/sprites/recuperacion-aire.png");
@@ -532,12 +659,12 @@
     animations.walk = extractFrames(walk);
     animations.sleepEnter = extractFrames(sleep);
     animations.sleepExit = [...animations.sleepEnter].reverse();
-    animations.sleepIdle = [animations.sleepEnter[animations.sleepEnter.length - 1]];
+    animations.sleepIdle = extractFrames(sleepLoop);
     animations.airGrab = extractFrames(airGrab);
     const airCrashFrames = extractFrames(airCrash);
     animations.airCrashEnter = airCrashFrames.slice(0, 4);
     animations.airCrashLoop = airCrashFrames.slice(4);
-    animations.airRecover = extractFrames(airRecover);
+    animations.airRecover = extractFramesByComponents(airRecover);
     animations.turnToIdle = extractFrames(turnToIdle);
     animations.idle = [animations.turnToIdle[animations.turnToIdle.length - 1]];
     animations.turnToWalk = [animations.idle[0], ...turnToWalkFrames.slice(1)];

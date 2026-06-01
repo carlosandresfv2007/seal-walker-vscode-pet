@@ -41,6 +41,7 @@ The seal is not implemented as a pure VS Code webview because VS Code extensions
 │   └── sprites/
 │       ├── caminar-izquierda.png
 │       ├── dormir.png
+│       ├── foca-durmiendo.png
 │       ├── giarar-despues-caminar.png
 │       └── girar-izquierda.png
 ├── pet-app/
@@ -141,7 +142,8 @@ Current files:
 - `girar-izquierda.png`: turn from idle into walking.
 - `caminar-izquierda.png`: walking step animation.
 - `giarar-despues-caminar.png`: turn from walking back to idle. The filename currently has a typo; the app also tries `girar-despues-caminar.png` if you rename it later.
-- `dormir.png`: sleep animation. Wake-up uses the same frames in reverse order.
+- `dormir.png`: transition into sleep. Wake-up uses the same frames in reverse order.
+- `foca-durmiendo.png`: looping sleeping animation while the seal remains asleep.
 - `foca-aire.png`: airborne grab animation. The first 4 frames play once, then the remaining frames loop while airborne.
 - `caida-aire.png`: impact animation. The first 4 frames play quickly, then the remaining frames loop until clicked.
 - `recuperacion-aire.png`: recovery animation after clicking the impacted seal.
