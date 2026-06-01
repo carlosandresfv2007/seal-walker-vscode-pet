@@ -134,6 +134,13 @@
           "maximum": 600,
           "description": "Frame duration for sleeping and waking animations."
         },
+        "sealWalker.airFrameMs": {
+          "type": "number",
+          "default": 95,
+          "minimum": 40,
+          "maximum": 400,
+          "description": "Frame duration for air grab, fall impact, and recovery animations."
+        },
         "sealWalker.tripleClickMs": {
           "type": "number",
           "default": 750,

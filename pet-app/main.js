@@ -47,6 +47,7 @@ function readConfig() {
       stepPauseMs: 420,
       walkMotionFrames: 10,
       sleepFrameMs: 150,
+      airFrameMs: 95,
       tripleClickMs: 750,
       spriteColumns: 4,
       spriteRows: 4,
@@ -67,6 +68,7 @@ function readConfig() {
       stepPauseMs: 420,
       walkMotionFrames: 10,
       sleepFrameMs: 150,
+      airFrameMs: 95,
       tripleClickMs: 750,
       spriteColumns: 4,
       spriteRows: 4,
@@ -198,6 +200,30 @@ function beginSleepEnter() {
   setMode("sleepEnter");
 }
 
+function beginAirCrashEnter() {
+  state.walkStepsRemaining = 0;
+  state.walkMotionActive = false;
+  state.velocityY = 0;
+  state.modeTimer = 0;
+  setMode("airCrashEnter");
+}
+
+function beginAirCrashLoop() {
+  state.walkStepsRemaining = 0;
+  state.walkMotionActive = false;
+  state.velocityY = 0;
+  state.modeTimer = 0;
+  setMode("airCrashLoop");
+}
+
+function beginAirRecover() {
+  state.walkStepsRemaining = 0;
+  state.walkMotionActive = false;
+  state.velocityY = 0;
+  state.modeTimer = 0;
+  setMode("airRecover");
+}
+
 function beginSleepIdle() {
   state.walkStepsRemaining = 0;
   state.walkMotionActive = false;
@@ -279,21 +305,29 @@ function tick() {
     return;
   }
 
-  if (state.mode === "fall") {
+  if (state.mode === "airFall") {
     state.velocityY += 1900 * dt;
     state.y += state.velocityY * dt;
 
     if (state.y >= floorY) {
       state.y = floorY;
       state.velocityY = 0;
-      beginIdle();
+      beginAirCrashEnter();
     }
 
     moveWindow();
     return;
   }
 
-  if (state.mode === "sleepEnter" || state.mode === "sleepIdle" || state.mode === "sleepExit") {
+  if (
+    state.mode === "sleepEnter" ||
+    state.mode === "sleepIdle" ||
+    state.mode === "sleepExit" ||
+    state.mode === "airGrab" ||
+    state.mode === "airCrashEnter" ||
+    state.mode === "airCrashLoop" ||
+    state.mode === "airRecover"
+  ) {
     return;
   }
 
@@ -382,7 +416,14 @@ ipcMain.on("seal:pointer-down", (_event, point) => {
     return;
   }
 
-  if (state.mode === "sleepEnter" || state.mode === "sleepIdle" || state.mode === "sleepExit") {
+  if (
+    state.mode === "sleepEnter" ||
+    state.mode === "sleepIdle" ||
+    state.mode === "sleepExit" ||
+    state.mode === "airCrashEnter" ||
+    state.mode === "airCrashLoop" ||
+    state.mode === "airRecover"
+  ) {
     return;
   }
 
@@ -391,7 +432,7 @@ ipcMain.on("seal:pointer-down", (_event, point) => {
   state.dragOffsetY = point.y;
   state.velocityY = 0;
   state.walkMotionActive = false;
-  setMode("drag");
+  setMode("airGrab");
 });
 
 ipcMain.on("seal:pointer-up", () => {
@@ -401,7 +442,7 @@ ipcMain.on("seal:pointer-up", () => {
 
   state.dragging = false;
   state.velocityY = 0;
-  setMode("fall");
+  setMode("airFall");
 });
 
 ipcMain.on("seal:animation-ended", (_event, mode) => {
@@ -424,6 +465,10 @@ ipcMain.on("seal:animation-ended", (_event, mode) => {
     beginSleepIdle();
   } else if (mode === "sleepExit") {
     beginIdle();
+  } else if (mode === "airCrashEnter") {
+    beginAirCrashLoop();
+  } else if (mode === "airRecover") {
+    beginIdle();
   }
 });
 
@@ -432,6 +477,17 @@ ipcMain.on("seal:walk-motion", (_event, active) => {
 });
 
 ipcMain.on("seal:click", () => {
+  if (state.mode === "airCrashEnter" || state.mode === "airCrashLoop") {
+    state.clickCount = 0;
+    state.lastClickAt = 0;
+    beginAirRecover();
+    return;
+  }
+
+  if (state.mode === "airRecover" || state.mode === "airGrab" || state.mode === "airFall") {
+    return;
+  }
+
   const now = Date.now();
   const withinWindow = now - state.lastClickAt <= config.tripleClickMs;
 

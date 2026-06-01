@@ -14,7 +14,7 @@ Seal Walker is a local VS Code extension that launches a small animated seal as 
 - Walks in random step rounds: turns, takes a random number of steps with pauses, then turns back to idle.
 - Bounces when it reaches the screen edges.
 - Can be grabbed and dragged anywhere on the screen.
-- Falls smoothly back to the floor when released.
+- Plays an airborne grab animation while dragged, then a fall/impact loop until clicked.
 - Triple-click to sleep.
 - Triple-click while sleeping to wake up.
 - Uses PNG spritesheets laid out as a `4x4` grid by default.
@@ -127,6 +127,7 @@ Available settings:
 - `sealWalker.stepPauseMs`: pause between step animations.
 - `sealWalker.walkMotionFrames`: number of leading walk frames that move the window during each step.
 - `sealWalker.sleepFrameMs`: speed of the sleep and wake-up animations.
+- `sealWalker.airFrameMs`: speed of the airborne grab, fall, impact, and recovery animations.
 - `sealWalker.tripleClickMs`: time window for detecting triple clicks.
 - `sealWalker.spriteColumns` and `sealWalker.spriteRows`: spritesheet grid size.
 
@@ -140,6 +141,9 @@ Current files:
 - `caminar-izquierda.png`: walking step animation.
 - `giarar-despues-caminar.png`: turn from walking back to idle. The filename currently has a typo; the app also tries `girar-despues-caminar.png` if you rename it later.
 - `dormir.png`: sleep animation. Wake-up uses the same frames in reverse order.
+- `foca-aire.png`: airborne grab animation. The first 4 frames play once, then the remaining frames loop while airborne.
+- `caida-aire.png`: impact animation. The first 4 frames play quickly, then the remaining frames loop until clicked.
+- `recuperacion-aire.png`: recovery animation after clicking the impacted seal.
 
 Expected format:
 

@@ -9,6 +9,7 @@
     walkFrameMs: 240,
     walkMotionFrames: 10,
     sleepFrameMs: 150,
+    airFrameMs: 95,
     ...window.sealPet.config
   };
 
@@ -20,7 +21,11 @@
     turnToIdle: [],
     sleepEnter: [],
     sleepIdle: [],
-    sleepExit: []
+    sleepExit: [],
+    airGrab: [],
+    airCrashEnter: [],
+    airCrashLoop: [],
+    airRecover: []
   };
 
   const state = {
@@ -273,6 +278,22 @@
       return animations.sleepExit;
     }
 
+    if (state.mode === "airGrab" || state.mode === "airFall") {
+      return animations.airGrab;
+    }
+
+    if (state.mode === "airCrashEnter") {
+      return animations.airCrashEnter;
+    }
+
+    if (state.mode === "airCrashLoop") {
+      return animations.airCrashLoop;
+    }
+
+    if (state.mode === "airRecover") {
+      return animations.airRecover;
+    }
+
     return animations.idle;
   }
 
@@ -283,6 +304,19 @@
 
     if (state.mode === "sleepEnter" || state.mode === "sleepExit") {
       return config.sleepFrameMs;
+    }
+
+    if (state.mode === "airCrashEnter") {
+      return Math.max(40, Math.round(config.airFrameMs * 0.55));
+    }
+
+    if (
+      state.mode === "airGrab" ||
+      state.mode === "airFall" ||
+      state.mode === "airCrashLoop" ||
+      state.mode === "airRecover"
+    ) {
+      return config.airFrameMs;
     }
 
     if (state.mode === "turnToWalk" || state.mode === "turnToIdle") {
@@ -335,9 +369,15 @@
       state.mode === "idle" ||
       state.mode === "stepPause" ||
       state.mode === "sleepIdle" ||
-      state.mode === "drag" ||
-      state.mode === "fall"
+      state.mode === "airCrashLoop"
     ) {
+      if (state.mode === "airCrashLoop") {
+        state.frameTimer += dt * 1000;
+        if (state.frameTimer >= frameDurationForMode()) {
+          state.frameTimer = 0;
+          state.frameIndex = frames.length > 0 ? (state.frameIndex + 1) % frames.length : 0;
+        }
+      }
       return;
     }
 
@@ -359,6 +399,15 @@
         window.sealPet.walkMotion(false);
         state.endedMode = state.mode;
         window.sealPet.animationEnded(state.mode);
+      }
+      return;
+    }
+
+    if (state.mode === "airGrab" || state.mode === "airFall") {
+      if (state.frameIndex < frames.length - 1) {
+        state.frameIndex += 1;
+      } else {
+        state.frameIndex = Math.min(4, frames.length - 1);
       }
       return;
     }
@@ -392,12 +441,17 @@
     state.mode = nextState.mode || state.mode;
     state.direction = Number.isFinite(nextState.direction) ? nextState.direction : state.direction;
 
+    const keepAirFrame = previousMode === "airGrab" && state.mode === "airFall";
+
     if (previousMode !== state.mode) {
       state.frameIndex = 0;
       state.frameTimer = 0;
       state.endedMode = undefined;
+      if (keepAirFrame) {
+        state.frameIndex = Math.min(4, getFramesForMode().length - 1);
+      }
       publishWalkMotion();
-      document.body.classList.toggle("dragging", state.mode === "drag");
+      document.body.classList.toggle("dragging", state.mode === "airGrab");
     }
   });
 
@@ -450,6 +504,9 @@
     const turnToWalk = await loadImage("../assets/sprites/girar-izquierda.png");
     const walk = await loadImage("../assets/sprites/caminar-izquierda.png");
     const sleep = await loadImage("../assets/sprites/dormir.png");
+    const airGrab = await loadImage("../assets/sprites/foca-aire.png");
+    const airCrash = await loadImage("../assets/sprites/caida-aire.png");
+    const airRecover = await loadImage("../assets/sprites/recuperacion-aire.png");
     const turnToIdle = await loadFirst([
       "../assets/sprites/girar-despues-caminar.png",
       "../assets/sprites/giarar-despues-caminar.png"
@@ -460,6 +517,11 @@
     animations.sleepEnter = extractFrames(sleep);
     animations.sleepExit = [...animations.sleepEnter].reverse();
     animations.sleepIdle = [animations.sleepEnter[animations.sleepEnter.length - 1]];
+    animations.airGrab = extractFrames(airGrab);
+    const airCrashFrames = extractFrames(airCrash);
+    animations.airCrashEnter = airCrashFrames.slice(0, 4);
+    animations.airCrashLoop = airCrashFrames.slice(4);
+    animations.airRecover = extractFrames(airRecover);
     animations.turnToIdle = extractFrames(turnToIdle);
     animations.idle = [animations.turnToIdle[animations.turnToIdle.length - 1]];
     animations.turnToWalk = [animations.idle[0], ...turnToWalkFrames.slice(1)];
@@ -473,6 +535,10 @@
       ...animations.sleepEnter,
       ...animations.sleepExit,
       ...animations.sleepIdle,
+      ...animations.airGrab,
+      ...animations.airCrashEnter,
+      ...animations.airCrashLoop,
+      ...animations.airRecover,
       ...animations.idle
     ];
     const padding = Math.max(0, Math.round(config.framePadding));
