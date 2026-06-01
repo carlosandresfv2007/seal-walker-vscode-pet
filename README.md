@@ -11,7 +11,7 @@ Seal Walker is a local VS Code extension that launches a small animated seal as 
 ## Features
 
 - Starts automatically when VS Code finishes launching.
-- Walks in step cycles: turns, takes one step, pauses, takes another step, then eventually returns to idle.
+- Walks in random step rounds: turns, takes a random number of steps with pauses, then turns back to idle.
 - Bounces when it reaches the screen edges.
 - Can be grabbed and dragged anywhere on the screen.
 - Falls smoothly back to the floor when released.
@@ -119,7 +119,10 @@ Available settings:
 - `sealWalker.scale`: visual size of the seal.
 - `sealWalker.speed`: horizontal movement speed.
 - `sealWalker.bottomMargin`: distance from the bottom edge of the screen.
-- `sealWalker.walkDuration`: total time spent walking before returning to idle.
+- `sealWalker.idleMinMs`: minimum time spent in idle before walking.
+- `sealWalker.idleMaxMs`: maximum time spent in idle before walking.
+- `sealWalker.walkMinSteps`: minimum random number of steps in one walking round.
+- `sealWalker.walkMaxSteps`: maximum random number of steps in one walking round.
 - `sealWalker.walkFrameMs`: duration of each walking frame.
 - `sealWalker.stepPauseMs`: pause between step animations.
 - `sealWalker.walkMotionFrames`: number of leading walk frames that move the window during each step.

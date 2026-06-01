@@ -78,12 +78,33 @@
           "maximum": 240,
           "description": "Distance in pixels between the seal and the bottom of the screen."
         },
-        "sealWalker.walkDuration": {
+        "sealWalker.idleMinMs": {
           "type": "number",
-          "default": 8500,
+          "default": 4000,
           "minimum": 1000,
           "maximum": 30000,
-          "description": "How long the seal keeps walking after turning, in milliseconds."
+          "description": "Minimum time the seal stays in its initial idle pose before walking."
+        },
+        "sealWalker.idleMaxMs": {
+          "type": "number",
+          "default": 11000,
+          "minimum": 1000,
+          "maximum": 60000,
+          "description": "Maximum time the seal stays in its initial idle pose before walking."
+        },
+        "sealWalker.walkMinSteps": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Minimum random number of steps in one walking round."
+        },
+        "sealWalker.walkMaxSteps": {
+          "type": "number",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 40,
+          "description": "Maximum random number of steps in one walking round."
         },
         "sealWalker.walkFrameMs": {
           "type": "number",

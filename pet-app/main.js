@@ -23,7 +23,7 @@ const state = {
   direction: -1,
   mode: "idle",
   modeTimer: 1600,
-  walkRemainingMs: 0,
+  walkStepsRemaining: 0,
   walkMotionActive: false,
   velocityY: 0,
   dragging: false,
@@ -39,7 +39,10 @@ function readConfig() {
       scale: 0.38,
       speed: 26,
       bottomMargin: 0,
-      walkDuration: 8500,
+      idleMinMs: 4000,
+      idleMaxMs: 11000,
+      walkMinSteps: 1,
+      walkMaxSteps: 6,
       walkFrameMs: 240,
       stepPauseMs: 420,
       walkMotionFrames: 10,
@@ -56,7 +59,10 @@ function readConfig() {
       scale: 0.38,
       speed: 26,
       bottomMargin: 0,
-      walkDuration: 8500,
+      idleMinMs: 4000,
+      idleMaxMs: 11000,
+      walkMinSteps: 1,
+      walkMaxSteps: 6,
       walkFrameMs: 240,
       stepPauseMs: 420,
       walkMotionFrames: 10,
@@ -115,7 +121,15 @@ function clamp(value, min, max) {
 }
 
 function randomBetween(min, max) {
-  return min + Math.random() * (max - min);
+  const low = Math.min(min, max);
+  const high = Math.max(min, max);
+  return low + Math.random() * (high - low);
+}
+
+function randomIntInclusive(min, max) {
+  const low = Math.ceil(Math.min(min, max));
+  const high = Math.floor(Math.max(min, max));
+  return Math.floor(Math.random() * (high - low + 1)) + low;
 }
 
 function createWindow() {
@@ -170,13 +184,13 @@ function setMode(mode) {
 
 function beginIdle() {
   setMode("idle");
-  state.modeTimer = randomBetween(900, 2600);
-  state.walkRemainingMs = 0;
+  state.modeTimer = randomBetween(config.idleMinMs, config.idleMaxMs);
+  state.walkStepsRemaining = 0;
   state.walkMotionActive = false;
 }
 
 function beginSleepEnter() {
-  state.walkRemainingMs = 0;
+  state.walkStepsRemaining = 0;
   state.walkMotionActive = false;
   state.clickCount = 0;
   state.lastClickAt = 0;
@@ -185,14 +199,14 @@ function beginSleepEnter() {
 }
 
 function beginSleepIdle() {
-  state.walkRemainingMs = 0;
+  state.walkStepsRemaining = 0;
   state.walkMotionActive = false;
   state.modeTimer = 0;
   setMode("sleepIdle");
 }
 
 function beginSleepExit() {
-  state.walkRemainingMs = 0;
+  state.walkStepsRemaining = 0;
   state.walkMotionActive = false;
   state.clickCount = 0;
   state.lastClickAt = 0;
@@ -214,9 +228,10 @@ function beginStepPause() {
 
 function beginTurnToWalk() {
   state.walkMotionActive = false;
+  state.walkStepsRemaining = randomIntInclusive(config.walkMinSteps, config.walkMaxSteps);
+  state.direction = Math.random() < 0.5 ? -1 : 1;
   setMode("turnToWalk");
   state.modeTimer = 0;
-  state.walkRemainingMs = config.walkDuration;
 }
 
 function beginTurnToIdle() {
@@ -290,7 +305,7 @@ function tick() {
     if (state.mode === "idle") {
       beginTurnToWalk();
     } else if (state.mode === "stepPause") {
-      if (state.walkRemainingMs <= 0) {
+      if (state.walkStepsRemaining <= 0) {
         beginTurnToIdle();
       } else {
         beginWalkStep();
@@ -299,7 +314,6 @@ function tick() {
   }
 
   if (state.mode === "walk") {
-    state.walkRemainingMs -= dt * 1000;
     if (state.walkMotionActive) {
       state.x += state.direction * config.speed * dt;
     }
@@ -398,7 +412,8 @@ ipcMain.on("seal:animation-ended", (_event, mode) => {
   if (mode === "turnToWalk") {
     beginWalkStep();
   } else if (mode === "walk") {
-    if (state.walkRemainingMs <= 0) {
+    state.walkStepsRemaining -= 1;
+    if (state.walkStepsRemaining <= 0) {
       beginTurnToIdle();
     } else {
       beginStepPause();
