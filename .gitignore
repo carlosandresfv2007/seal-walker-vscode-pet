@@ -1,0 +1,17 @@
+node_modules/
+*.vsix
+.vscode-test/
+dist/
+npm-debug.log*
+
+# Runtime/editor noise
+.DS_Store
+Thumbs.db
+*.log
+coverage/
+.nyc_output/
+
+# Local packaged Electron/VS Code artifacts
+out/
+build/
+release/

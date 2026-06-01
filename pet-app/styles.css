@@ -1,0 +1,24 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+body {
+  cursor: grab;
+}
+
+body.dragging {
+  cursor: grabbing;
+}
+
+#stage {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+}

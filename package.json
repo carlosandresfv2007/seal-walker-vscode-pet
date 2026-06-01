@@ -1,0 +1,166 @@
+{
+  "name": "seal-walker-vscode",
+  "displayName": "Seal Walker",
+  "description": "A tiny seal that walks along the bottom of your screen when VS Code opens.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:sealWalker.start",
+    "onCommand:sealWalker.stop",
+    "onCommand:sealWalker.restart",
+    "onCommand:sealWalker.smaller",
+    "onCommand:sealWalker.larger",
+    "onCommand:sealWalker.resetSize"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sealWalker.start",
+        "title": "Seal: Start"
+      },
+      {
+        "command": "sealWalker.stop",
+        "title": "Seal: Stop"
+      },
+      {
+        "command": "sealWalker.restart",
+        "title": "Seal: Restart"
+      },
+      {
+        "command": "sealWalker.smaller",
+        "title": "Seal: Smaller"
+      },
+      {
+        "command": "sealWalker.larger",
+        "title": "Seal: Larger"
+      },
+      {
+        "command": "sealWalker.resetSize",
+        "title": "Seal: Reset Size"
+      }
+    ],
+    "configuration": {
+      "title": "Seal Walker",
+      "properties": {
+        "sealWalker.launchOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Launch the seal automatically when VS Code finishes starting."
+        },
+        "sealWalker.scale": {
+          "type": "number",
+          "default": 0.38,
+          "minimum": 0.15,
+          "maximum": 1.4,
+          "description": "Visual scale applied to each sprite frame."
+        },
+        "sealWalker.speed": {
+          "type": "number",
+          "default": 26,
+          "minimum": 10,
+          "maximum": 400,
+          "description": "Walking speed in pixels per second."
+        },
+        "sealWalker.bottomMargin": {
+          "type": "number",
+          "default": 0,
+          "minimum": -80,
+          "maximum": 240,
+          "description": "Distance in pixels between the seal and the bottom of the screen."
+        },
+        "sealWalker.walkDuration": {
+          "type": "number",
+          "default": 8500,
+          "minimum": 1000,
+          "maximum": 30000,
+          "description": "How long the seal keeps walking after turning, in milliseconds."
+        },
+        "sealWalker.walkFrameMs": {
+          "type": "number",
+          "default": 240,
+          "minimum": 80,
+          "maximum": 500,
+          "description": "Frame duration for the walking loop. Higher values make the walk animation slower."
+        },
+        "sealWalker.stepPauseMs": {
+          "type": "number",
+          "default": 420,
+          "minimum": 0,
+          "maximum": 2000,
+          "description": "Pause duration between each walking animation pass."
+        },
+        "sealWalker.walkMotionFrames": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 255,
+          "description": "Number of leading walk frames that move the seal. Later frames finish the pose without sliding."
+        },
+        "sealWalker.sleepFrameMs": {
+          "type": "number",
+          "default": 150,
+          "minimum": 60,
+          "maximum": 600,
+          "description": "Frame duration for sleeping and waking animations."
+        },
+        "sealWalker.tripleClickMs": {
+          "type": "number",
+          "default": 750,
+          "minimum": 250,
+          "maximum": 1500,
+          "description": "Maximum time window in milliseconds for three clicks to trigger sleep or wake."
+        },
+        "sealWalker.walkStartFrame": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 255,
+          "description": "First spritesheet frame used for walking. Frame 0 stays as the idle/default seal."
+        },
+        "sealWalker.framePadding": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 40,
+          "description": "Transparent padding kept around each extracted sprite frame."
+        },
+        "sealWalker.spriteColumns": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Number of columns in the walking spritesheet."
+        },
+        "sealWalker.spriteRows": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 16,
+          "description": "Number of rows in the walking spritesheet."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "check": "node -c extension.js && node -c pet-app/main.js && node -c pet-app/preload.js && node -c pet-app/renderer.js",
+    "pet": "electron --no-sandbox --disable-gpu --ozone-platform=x11 pet-app/main.js",
+    "install-local": "node scripts/install-local-extension.js",
+    "uninstall-local": "node scripts/uninstall-local-extension.js"
+  },
+  "dependencies": {
+    "electron": "^39.8.10"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0"
+  }
+}
