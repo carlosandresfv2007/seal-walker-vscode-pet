@@ -52,6 +52,7 @@ function getSealConfig() {
     walkMotionFrames: config.get("walkMotionFrames", 10),
     sleepFrameMs: config.get("sleepFrameMs", 150),
     airFrameMs: config.get("airFrameMs", 95),
+    impactLoopFrameMs: config.get("impactLoopFrameMs", 180),
     tripleClickMs: config.get("tripleClickMs", 750),
     walkStartFrame: config.get("walkStartFrame", 2),
     framePadding: config.get("framePadding", 10),

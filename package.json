@@ -141,6 +141,13 @@
           "maximum": 400,
           "description": "Frame duration for air grab, fall impact, and recovery animations."
         },
+        "sealWalker.impactLoopFrameMs": {
+          "type": "number",
+          "default": 180,
+          "minimum": 60,
+          "maximum": 800,
+          "description": "Frame duration for the loop that plays on the floor after the seal falls."
+        },
         "sealWalker.tripleClickMs": {
           "type": "number",
           "default": 750,

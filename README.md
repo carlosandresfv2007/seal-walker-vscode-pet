@@ -128,6 +128,7 @@ Available settings:
 - `sealWalker.walkMotionFrames`: number of leading walk frames that move the window during each step.
 - `sealWalker.sleepFrameMs`: speed of the sleep and wake-up animations.
 - `sealWalker.airFrameMs`: speed of the airborne grab, fall, impact, and recovery animations.
+- `sealWalker.impactLoopFrameMs`: speed of the loop that plays on the floor after a fall.
 - `sealWalker.tripleClickMs`: time window for detecting triple clicks.
 - `sealWalker.spriteColumns` and `sealWalker.spriteRows`: spritesheet grid size.
 
