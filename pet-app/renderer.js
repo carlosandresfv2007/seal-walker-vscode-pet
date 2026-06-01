@@ -139,7 +139,7 @@
     const image = frameCtx.getImageData(0, 0, width, height);
     const data = image.data;
     const visited = new Uint8Array(width * height);
-    let best = { x: 0, y: 0, width, height, area: 0 };
+    const components = [];
 
     function isOpaque(index) {
       return data[index * 4 + 3] > 12;
@@ -194,16 +194,28 @@
       }
 
       const component = inspectComponent(index);
-      if (component.area > best.area) {
-        best = component;
-      }
+      components.push(component);
     }
 
-    if (best.area === 0) {
+    if (components.length === 0) {
       return { x: 0, y: 0, width, height };
     }
 
-    return best;
+    const largestArea = Math.max(...components.map((component) => component.area));
+    const minArea = Math.max(18, largestArea * 0.01);
+    const kept = components.filter((component) => component.area >= minArea);
+
+    const minX = Math.min(...kept.map((component) => component.x));
+    const minY = Math.min(...kept.map((component) => component.y));
+    const maxX = Math.max(...kept.map((component) => component.x + component.width - 1));
+    const maxY = Math.max(...kept.map((component) => component.y + component.height - 1));
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX + 1,
+      height: maxY - minY + 1
+    };
   }
 
   function extractFrames(image) {
