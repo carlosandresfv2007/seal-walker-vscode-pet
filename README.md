@@ -2,7 +2,10 @@
 
 Seal Walker is a local VS Code extension that launches a small animated seal as a transparent Electron window. The seal walks along the bottom of the screen, can be dragged around, falls smoothly when released, and can sleep or wake up with triple-click interactions.
 
-<img width="623" height="347" alt="image" src="https://github.com/user-attachments/assets/f0597412-3ba4-4273-a48f-1c9367eccb3c" />
+
+<img width="284" height="188" alt="image" src="https://github.com/user-attachments/assets/276beb9a-9e5e-4e61-9910-078b2a44add9" />
+<img width="284" height="188" alt="image" src="https://github.com/user-attachments/assets/5bbb5f8a-9b8d-49b3-a83f-340ecbb4624b" />
+<img width="238" height="160" alt="image" src="https://github.com/user-attachments/assets/04c53bb7-5b3e-4a44-9a92-ea586f5d3427" />
 
 
 ## Features
