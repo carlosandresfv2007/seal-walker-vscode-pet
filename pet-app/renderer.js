@@ -9,6 +9,7 @@
     walkFrameMs: 240,
     walkMotionFrames: 10,
     sleepFrameMs: 150,
+    airGrabFrameMs: 55,
     airFrameMs: 95,
     impactLoopFrameMs: 180,
     ...window.sealPet.config
@@ -447,9 +448,12 @@
 
     if (
       state.mode === "airGrab" ||
-      state.mode === "airFall" ||
-      state.mode === "airRecover"
+      state.mode === "airFall"
     ) {
+      return config.airGrabFrameMs;
+    }
+
+    if (state.mode === "airRecover") {
       return config.airFrameMs;
     }
 

@@ -51,6 +51,7 @@ function getSealConfig() {
     stepPauseMs: config.get("stepPauseMs", 420),
     walkMotionFrames: config.get("walkMotionFrames", 10),
     sleepFrameMs: config.get("sleepFrameMs", 150),
+    airGrabFrameMs: config.get("airGrabFrameMs", 55),
     airFrameMs: config.get("airFrameMs", 95),
     impactLoopFrameMs: config.get("impactLoopFrameMs", 180),
     tripleClickMs: config.get("tripleClickMs", 750),
@@ -61,9 +62,13 @@ function getSealConfig() {
   };
 }
 
-function getElectronPath() {
-  const electron = require("electron");
-  return typeof electron === "string" ? electron : electron.toString();
+function getElectronPath(context) {
+  const electronDir = path.join(context.extensionPath, "node_modules", "electron");
+  const executableName = fs.readFileSync(path.join(electronDir, "path.txt"), "utf8").trim();
+  const electronPath = path.join(electronDir, "dist", executableName);
+
+  fs.accessSync(electronPath, fs.constants.X_OK);
+  return electronPath;
 }
 
 async function startSeal(context, source = "command") {
@@ -83,13 +88,14 @@ async function startSeal(context, source = "command") {
     // Best effort cleanup for stale process markers.
   }
 
-  const electronPath = getElectronPath();
+  const electronPath = getElectronPath(context);
   const appMain = path.join(context.extensionPath, "pet-app", "main.js");
   const env = {
     ...process.env,
     SEAL_PET_PID_FILE: PID_FILE,
     SEAL_PET_CONFIG: JSON.stringify(config)
   };
+  delete env.ELECTRON_RUN_AS_NODE;
 
   const args =
     process.platform === "linux"
@@ -101,6 +107,10 @@ async function startSeal(context, source = "command") {
     detached: true,
     env,
     stdio: "ignore"
+  });
+
+  petProcess.once("error", (error) => {
+    vscode.window.showWarningMessage(`Could not start the seal: ${error.message}`);
   });
 
   petProcess.unref();

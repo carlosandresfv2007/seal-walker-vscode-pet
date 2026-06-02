@@ -52,6 +52,7 @@ The seal is not implemented as a pure VS Code webview because VS Code extensions
 │   └── styles.css
 ├── scripts/
 │   ├── install-local-extension.js
+│   ├── setup-local-extension.js
 │   └── uninstall-local-extension.js
 ├── extension.js
 ├── package.json
@@ -66,23 +67,49 @@ Requirements:
 - Node.js and npm.
 - Linux is currently the primary target. The Electron launch command includes Linux-friendly flags: `--no-sandbox`, `--disable-gpu`, and `--ozone-platform=x11`.
 
-Steps:
+Quick install:
 
 ```bash
 git clone <REPOSITORY_URL>
-cd seal-walker-vscode-pet
-npm install
-npm run check
-npm run install-local
+cd SealExtension
+npm run setup
 ```
 
-Then close and reopen VS Code. The seal should appear automatically.
+Then close and reopen VS Code. The seal starts automatically after VS Code finishes launching.
 
-To uninstall the local extension:
+What `npm run setup` does:
+
+- Installs npm dependencies.
+- Checks the JavaScript files.
+- Installs this cloned folder as a local VS Code extension using a symlink in `~/.vscode/extensions/`.
+
+If your cloned folder has a different name, use that folder name in the `cd` step.
+
+## Use
+
+Open VS Code normally. The seal should appear automatically.
+
+To stop it for the current session, open the command palette with `Ctrl+Shift+P` and run:
+
+```text
+Seal: Stop
+```
+
+To start it again without reopening VS Code:
+
+```text
+Seal: Start
+```
+
+To disable automatic startup, search `Seal Walker` in VS Code settings and turn off `Seal Walker: Launch On Startup`.
+
+To uninstall Seal Walker from VS Code:
 
 ```bash
 npm run uninstall-local
 ```
+
+Then close and reopen VS Code.
 
 ## Development
 
@@ -128,7 +155,8 @@ Available settings:
 - `sealWalker.stepPauseMs`: pause between step animations.
 - `sealWalker.walkMotionFrames`: number of leading walk frames that move the window during each step.
 - `sealWalker.sleepFrameMs`: speed of the sleep and wake-up animations.
-- `sealWalker.airFrameMs`: speed of the airborne grab, fall, impact, and recovery animations.
+- `sealWalker.airGrabFrameMs`: speed of the flipper animation while the seal is grabbed in the air.
+- `sealWalker.airFrameMs`: speed of the fall impact and recovery animations.
 - `sealWalker.impactLoopFrameMs`: speed of the loop that plays on the floor after a fall.
 - `sealWalker.tripleClickMs`: time window for detecting triple clicks.
 - `sealWalker.spriteColumns` and `sealWalker.spriteRows`: spritesheet grid size.

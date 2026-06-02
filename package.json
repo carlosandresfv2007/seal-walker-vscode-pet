@@ -134,12 +134,19 @@
           "maximum": 600,
           "description": "Frame duration for sleeping and waking animations."
         },
+        "sealWalker.airGrabFrameMs": {
+          "type": "number",
+          "default": 55,
+          "minimum": 30,
+          "maximum": 200,
+          "description": "Frame duration for the flipper animation while the seal is grabbed in the air."
+        },
         "sealWalker.airFrameMs": {
           "type": "number",
           "default": 95,
           "minimum": 40,
           "maximum": 400,
-          "description": "Frame duration for air grab, fall impact, and recovery animations."
+          "description": "Frame duration for fall impact and recovery animations."
         },
         "sealWalker.impactLoopFrameMs": {
           "type": "number",
@@ -187,6 +194,7 @@
     }
   },
   "scripts": {
+    "setup": "node scripts/setup-local-extension.js",
     "check": "node -c extension.js && node -c pet-app/main.js && node -c pet-app/preload.js && node -c pet-app/renderer.js",
     "pet": "electron --no-sandbox --disable-gpu --ozone-platform=x11 pet-app/main.js",
     "install-local": "node scripts/install-local-extension.js",
