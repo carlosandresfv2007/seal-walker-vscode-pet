@@ -6,6 +6,8 @@ Seal Walker is a local VS Code extension that launches a small animated seal as 
 <img width="284" height="188" alt="image" src="https://github.com/user-attachments/assets/276beb9a-9e5e-4e61-9910-078b2a44add9" />
 <img width="284" height="188" alt="image" src="https://github.com/user-attachments/assets/5bbb5f8a-9b8d-49b3-a83f-340ecbb4624b" />
 <img width="238" height="160" alt="image" src="https://github.com/user-attachments/assets/04c53bb7-5b3e-4a44-9a92-ea586f5d3427" />
+<img width="179" height="145" alt="image" src="https://github.com/user-attachments/assets/2a1a7ea3-d392-4f8e-b4ed-4cdd42fa3008" />
+<img width="130" height="67" alt="image" src="https://github.com/user-attachments/assets/9d9d59a4-76ef-4c7e-9eb6-0953a9f51ca8" />
 
 
 ## Features
